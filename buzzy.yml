@@ -1,0 +1,490 @@
+---
+#
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: buzzy
+#
+# ---
+
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: buzzy-app
+  namespace: buzzy
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  revisionHistoryLimit: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template: # create pods using pod definition in this template
+    metadata:
+      # unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: buzzy-app
+    spec:
+      imagePullSecrets:
+        - name: dockerhub
+      containers:
+        - name: buzzy-app-container
+          image: docker.io/buzzybuzz/buzzy-main:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+        #   resources:
+        #     # limits:
+        #     #   memory: 256M
+        #     #   cpu: 100m
+        #     requests:
+        #       memory: 512M
+        #     #   cpu: 100m
+          env:
+            - name: PORT
+              value: "8080"
+            - name: ROOT_URL
+              value: "<BUZZY_URL>"
+            - name: LOG_TO_STDOUT
+              value: "1"
+            - name: MONGO_URL
+              value:  "mongodb://<mongodbuser>:<mongodbuserpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/buzzy_debug?ssl=true&authSource=admin"
+            - name: MONGO_OPLOG_URL
+              value: "mongodb://<oploguser>:<oplogpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/local?authSource=admin&ssl=true"
+            - name: MAIL_URL
+              value: "smtp://someuser:somepassword@smtp.sendgrid.net:587"
+            - name: METEOR_SETTINGS
+              value: '{
+                "BUZZY_MOBILE_CONFIG": {
+                    "id": "com.<somedomain>.<some sub domain - eg app>",
+                    "name": "<App Name>",
+                    "description": "<App description>",
+                    "version": "3.0.4"
+
+                },
+              	"AWS_BUZZY_FILES": {
+              		"enabled": false,
+
+              		"accessKeyId": "",
+              		"secretAccessKey": "",
+              		"BUCKET_NAME": "",
+              		"S3_REGION": ""
+              	},
+                "PUSH_SETTINGS": {
+                    "apn": {
+            			"certDataFileName":"prod_cert_28dec2017.pem",
+            			"keyDataFileName":"prod_key_28dec2017.pem",
+                     	"passphrase": "some-passphrase",
+                        "production": true
+
+                    },
+                    "gcm": {
+                        "apiKey": "<GCMKEY>"
+                    },
+                     "production": true,
+                     "sound": true,
+                     "badge": true,
+                     "alert": true,
+                     "vibrate": true,
+                     "sendInterval": 5000,
+                     "sendBatchSize": 100
+
+                },
+              	"filepicker": {
+
+              		"secret": "will become obsolete"
+
+              	},
+                "MAIL_URL": "<as above SMTP user+parssowrd+smtpurl>",
+                "BUZZY_TESTING": false,
+              	"BUZZY_ADMIN_IDS": ["LIST ADMIN useridwillgohere once they are setup"],
+              	"BUZZY_WATSON_USERID": "",
+              	"BUZZY_LOGGING_TOKEN": "somelongtoken",
+              	"BUZZY_ADMIN_TOKEN": "somelongtoken",
+              	"BUZZY_DEBUG": true,
+              	"BUZZY_BASIC_BUZZ_ID": "setthisup",
+              	"BUZZY_WELCOME_BUZZ_ID": "setthisup",
+              	"CAMPAIGN_MONITOR": {
+              		"AVOID": true,
+              		"APIKEY": "",
+              		"NEW_SUBSCRIBERS_LIST": "",
+              		"WELCOME_SUBSCRIBERS_LIST": "",
+              		"CONNECTIONS_ADMIN_LIST": "",
+              		"UNPAID_AUTHOR_LIST": ""
+
+              	},
+                "BUZZY_BASIC_BUZZ_ID": "<buzz id of basic buzz>",
+                "BUZZY_WELCOME_BUZZ_ID": "<buzz id of Welcome Buzz>",
+
+              	"MAIL_INCOMING_DOMAIN": "needed if reply to comments via email are needed",
+              	"MAILGUN_KEY": "mailgun key for incoming MAIL_INCOMING_DOMAIN",
+              	"LOGINS": {
+              		"GOOGLE": {
+              			"clientId": "<somegoogleappid>.apps.googleusercontent.com",
+              			"secret": "<googlesecret>",
+              			"loginStyle": "redirect"
+              		},
+              		"MICROSOFT": {
+              			"clientId": "<microsoft clientid>",
+              			"secret": "<microsoft secret>"
+              		},
+              		"FACEBOOK": {
+              			"appId": "<facebook app id>",
+              			"secret": "<facebook secret>"
+              		},
+              		"SLACK": {
+              			"secret": "slacksecretgoeshere"
+              		},
+              		"IBM_WATSON_WORKSPACE": {
+              			"secret": "ibmwatsonsecretgoeshere",
+              			"webhook_secret": "ibmwatsonsecretwebhookgoeshere"
+              		}
+
+              	},
+              	"IBMConnectionsCloud": {
+              		"display": "redirect",
+              		"communityLimit": 1000,
+              		"jwtSecret": "not needed unless in Cloud Catalog",
+              		"salesSupportEmail": "not needed unless in Cloud Catalog",
+              		"adminSupportEmails": ["not needed unless in Cloud Catalog"]
+
+              	},
+              	"TWITTER": {
+              		"consumer_key": "",
+              		"consumer_secret": "",
+              		"access_token": "",
+              		"access_token_secret": ""
+              	},
+              	"stripe": {
+              		"enabled": false,
+              		"testSecretKey": "sk_test_somekey",
+              		"liveSecretKey": "sk_live_somekey",
+              		"applicationFee": 0.005
+              	},
+              	"saml_idps": {
+
+              		"acmeinc": {
+              			"sso_login_url": "sign-inurl",
+              			"sso_logout_url": " signouturl",
+              			"certificates": ["certgoeshere"]
+              		}
+
+              	},
+              	"public":
+                    "EMBEDLEY":"891b25c24ede41cf8ee5a4f0802a3cff",
+                    "S3FileExpiry": 6.048e+8,
+              		"AWS_BUZZY_FILES": {
+              			"enabled":false,
+              			"S3FileExpiry": 604800,
+              			"BUCKET_NAME": "bucket name on AWS S3 or other on prem S3 server"
+              		},
+              		"CLOUD_IMAGE": {
+              			"enabled": false,
+              			"token": "for faster/compressed images see cloudimg.io",
+              			"baseUrl": "https://<somekey>.cloudimg.io/s"
+              		},
+              		"GIPHY_ENABLED": false,
+              		"GOOGLEMAPS_ENABLED": false,
+              		"VIMEO": {
+              			"enabled": true,
+              			"accessToken": "key for VIMEO developer services for uploading and streaming video"
+
+              		},
+              		"GOOGLEBROWSER_API_KEY": "google key for API services like Maps etc",
+              		"GOOGLEIOS_API_KEY": "specific Google key for IOS",
+              		"IBMConnectionsCloud": {
+              			"adminWelcomeBuzzID": "ID of file when new cloud signup",
+              			"defaultSignInDomain": "https://apps.collabservintegration.com",
+              			"alternateSignInDomains": ["https://apps.ce.collabserv.com", "https://apps.ap.collabserv.com", "https://apps.na.collabserv.com"],
+              			"defaultService": "connectionscloud",
+              			"defaultClientID": "isv_buzzy_buzzy",
+              			"headerVisible": true,
+              			"display": "redirect",
+              			"files": {
+              				"options": [{
+              						"option": "publicfiles",
+              						"label": "Public files",
+              						"url": "/files/oauth/api/documents/feed?visibility=public"
+              					},
+              					{
+              						"option": "myfiles",
+              						"label": "My files",
+              						"url": "/files/oauth/api/myuserlibrary/feed"
+              					},
+              					{
+              						"option": "myfilespublic",
+              						"label": "My files",
+              						"url": "/files/oauth/api/myuserlibrary/feed",
+              						"params": { "visibility": "public" }
+              					},
+              					{
+              						"option": "sharedwithme",
+              						"label": "Files shared with me",
+              						"url": "/files/oauth/api/documents/shared/feed?direction=inbound"
+              					},
+              					{
+              						"option": "sharedbyme",
+              						"label": "Files shared by me",
+              						"url": "/files/oauth/api/documents/shared/feed?direction=outbound"
+              					},
+              					{
+              						"option": "pinnedbyme",
+              						"label": "Pinned by me",
+              						"url": "/files/oauth/api/myfavorites/documents/feed"
+              					},
+              					{
+              						"option": "communityfiles",
+              						"label": "Community files",
+              						"url": "/files/oauth/api/communitycollection/{communityId}/feed"
+              					},
+              					{
+              						"option": "communityfilesupload",
+              						"label": "Community files",
+              						"url": "/files/oauth/api/communitylibrary/{communityId}/feed"
+              					}
+              				]
+
+              			}
+
+              		},
+
+              		"LOGINS": {
+                        "APPSTORE": {
+                            "enabled": false
+                        },
+                        "SECONDARY": {
+                            "enabled": false
+                        },
+                        "INTEGRATIONS": {
+                            "enabled": true
+                        },
+              			"PASSWORD": {
+              				"enabled": true
+              			},
+              			"GOOGLE": {
+              				"enabled": true
+
+              			},
+              			"MICROSOFT": {
+              				"enabled": false
+
+              			},
+              			"IBM_CONNECTIONS_CLOUD": {
+              				"enabled": false
+
+              			},
+              			"IBM_CONNECTIONS_ONPREM": {
+              				"enabled": true
+
+              			},
+              			"FACEBOOK": {
+              				"enabled": false
+
+              			},
+              			"SLACK": {
+              				"enabled": false,
+              				"oauthCallback": "https://<domain>/_oauth/slack",
+              				"clientID": "slack client ID"
+
+              			},
+              			"IBM_WATSON_WORKSPACE": {
+              				"enabled": false,
+              				"oauthCallback": "https://<domain>/_oauth/ibmwatsonworkspace",
+              				"clientID": "WW client ID"
+              			}
+
+              		},
+              		"BUZZY_REDIRECT": "/sign-in",
+              		"BUZZY_CUSTOM": {
+              			"NAME": "ThinArrow",
+              			"APP_URL_IOS": "itunes.apple.com/app/apple-store/id954176500?pt=105534889&ct=buzzyemailcomment&mt=8",
+              			"APP_URL_ANDROID": "play.google.com/store/apps/details?id=buzz.buzzy.my1&hl=en&utm_source=buzzy_email&utm_content=buzzyemailcomment",
+              			"LOGO_MAIN": "https://s3.amazonaws.com/buzzy-custom-logos/logo_thinarrow_rev.png",
+              			"LOGO_MAIL": "https://s3.amazonaws.com/buzzy-custom-logos/logo_thinarrow.png
+                        "LOGO_MAIL_WIDTH": "60",
+                        "LOGO_MAIL_HEIGHT": "25",
+              			"EMAIL_FOOTER": "The thinnest arrow of them all.",
+              			"PROMO": "Buzzy is the easiest way to communicate and manage group projects in both your personal and professional life.",
+              			"PROMO_URL": "http://www.buzzy.buzz",
+                        "SPLASH_IMAGE": "<url to some image>",
+                        "WELCOME_IMAGE": "<url to some image>"
+
+              		},
+              		"BUZZY_VERSION": "3.0.1",
+              		"BUZZY_DEBUG_CLIENT": true,
+              		"BUZZY_PROVIDERS": [{
+              				"name": "ibmconnectionscloud",
+              				"displayName": "IBM Connections Cloud",
+              				"domain": "https://apps.collabservintegration.com"
+              			},
+              			{
+              				"name": "ibmconnectionsonprem",
+              				"displayName": "IBM Connections On Premise",
+              				"domain": "https://apps.collabservintegration.com"
+              			},
+              			{
+              				"name": "ibmwatsonworkspace",
+              				"displayName": "IBM Watson Workspace"
+              			},
+              			{
+              				"name": "slack",
+              				"displayName": "Slack"
+              			}
+              		],
+              		"MIXPANEL_ENABLED": false,
+              		"analyticsSettings": {
+              			"Mixpanel": {
+              				"token": "<mixpanel token>",
+              				"people": true
+              			}
+              		},
+              		"filepicker": {
+              			"key": "will become obsolete",
+              			"pickSignature": "will become obsolete",
+              			"pickPolicy": "will become obsolete"
+              		},
+              		"BUZZY_LOGGING_SERVER": "<Buzzy logging server url>",
+              		"stripe": {
+              			"enabled": false,
+              			"debug": true,
+              			"testClientID": "ca_<somekey>",
+              			"liveClientID": "ca_<somekey>",
+              			"testPublishableKey": "<somekey>",
+              			"livePublishableKey": "<somekey>",
+              			"expiryDates": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+              			"currencies":["afa","all","dzd","usd","eur","aoa","xcd","nok","ara","amd","awg","aud","azm","bsd","bhd","bdt","bbd","byr","bzd","xaf","bmd","btn","bob","bam","bwp","brl","gbp","bnd","bgn","bif","khr","cad","cve","kyd","clf","cny","cop","kmf","cdz","nzd","crc","hrk","cup","czk","dkk","djf","dop","tpe","egp","ern","eek","etb","fkp","fjd","xpf","gmd","gel","ghc","gip","gtq","gns","gwp","gyd","htg","hnl","hkd","huf","isk","inr","idr","irr","iqd","ils","jmd","jpy","jod","kzt","kes","kpw","krw","kwd","kgs","lak","lvl","lbp","lsl","lrd","lyd","chf","ltl","mop","mkd","mgf","mwk","myr","mvr","mro","mur","mxn","mdl","mnt","mad","mzm","mmk","nad","npr","ang","nic","xof","ngn","omr","pkr","pab","pgk","pyg","pei","php","pln","qar","rol","rub","rwf","wst","std","sar","scr","sll","sgd","sbd","sos","zar","lkr","shp","sdg","srg","szl","sek","syp","twd","tjr","tzs","thb","top","ttd","tnd","try","tmm","ugs","uah","sur","aed","uyu","uzs","vuv","vef","vnd","zmk"]
+              		},
+                    "USER_ONBOARDING":{
+            			"tagsEnabled":true
+            		},
+            		"USER_TAGS":{
+            			"enabled":true,
+            			"usersCanSelect":["interests"],
+            			"list":[
+
+            				{
+            					"prompt":"What do you use Buzzy for?",
+            					"category":"buzzyinterests",
+            					"type":"multiple",
+            					"tags":[
+            						{"tag":"work","label":"Work"},
+            						{"tag":"family","label":"Family"},
+            						{"tag":"friends","label":"Friends"},
+            						{"tag":"sportcoordination","label":"Sports Coordination"},
+            						{"tag":"collaboration","label":"Collaboration"},
+            						{"tag":"school","label":"School"},
+            						{"tag":"event","label":"Event"},
+            						{"tag":"travel","label":"Travel"}
+
+            					]
+
+            				}
+            			]
+            		}
+              	}
+
+              }'
+
+            # - name: NODE_ENV
+        #       value: production
+        #     - name: MONGO_COMPOSE_URL
+        #       value: mongodb://secret
+        #     - name: SESSION_SECRET
+        #       value: secret
+        #     - name: SEED_OAUTH_CLIENT_ID
+        #       value: secret
+        #     - name: SEED_OAUTH_CLIENT_PWD
+        #       value: secret
+        #     - name: MAILER_FROM_NAME
+        #       value: Kudos Boards
+        #     - name: MAILER_FROM_ADDRESS
+        #       value: notifications@kudosboards.com
+        #     - name: MAILER_SERVICE_PROVIDER
+        #       value: sendgrid
+        #     - name: MAILER_EMAIL_ID
+        #       value: secret
+        #     - name: MAILER_PASSWORD
+        #       value: secret
+        #     - name: RUN_COMMAND
+        #       value: gulp prod
+        #     - name: PORT
+        #       value: "8080"
+        #     - name: REDIS_HOST
+        #       value: redis-boards-prod-service
+        #     - name: REDIS_PORT
+        #       value: "6379"
+        #     - name: STRIPE_SECRET
+        #       value: secret
+        #     - name: STRIPE_SIGNING_SECRET
+        #       value: secret
+        #     - name: STRIPE_TEST_CUSTOMER
+        #       value: secret
+        #     - name: STRIPE_PUBLISHABLE_KEY
+        #       value: secret
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: buzzy-service
+  namespace: buzzy
+spec:
+  type: NodePort
+  selector:
+    app: buzzy-app
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30289
+
+---
+
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#   name: buzzy-ingress-prod
+#   namespace: buzzy
+#   annotations:
+#     ingress.bluemix.net/sticky-cookie-services: serviceName=buzzy-service name=sticky_session_cookie
+#     ingress.bluemix.net/websocket-services: buzzy-service
+#     ingress.bluemix.net/redirect-to-https: "true"
+#     ingress.bluemix.net/proxy-buffering: "false"
+#     ingress.bluemix.net/client-max-body-size: "200m"
+#     ingress.bluemix.net/location-snippets: "proxy-buffer-size 128k;"
+# spec:
+#   tls:
+#     - hosts:
+#         - blue.buzzy.buzz
+#         # - www.kudosboards.com
+#         # - api.kudosboards.com
+#         # - my.kudosboards.com
+#       secretName: buzzy-domain-secret
+#   rules:
+#     - host: blue.buzzy.buzz
+#       http:
+#         paths:
+#           - backend:
+#               serviceName: buzzy-service
+#               servicePort: 80
+#     # - host: www.kudosboards.com
+#     #   http:
+#     #     paths:
+#     #       - backend:
+#     #           serviceName: kudos-boards-cloud-prod-service
+#     #           servicePort: 80
+#     # - host: api.kudosboards.com
+#     #   http:
+#     #     paths:
+#     #       - backend:
+#     #           serviceName: kudos-boards-cloud-prod-service
+#     #           servicePort: 80
+#     # - host: my.kudosboards.com
+#     #   http:
+#     #     paths:
+#     #       - backend:
+#     #           serviceName: kudos-boards-cloud-prod-service
+#     #           servicePort: 80
