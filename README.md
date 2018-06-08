@@ -2,16 +2,86 @@
 Basic instructions for deploying buzzy into IBM Spectrum for on-premise IBM Connections environments
 
 
-### ISW PROD Spectrum CFC Console login details
-console: [URL](https://192.168.12.34:8443)  
-username: admin   
-password: g...4...   
+### ISW PROD Spectrum CFC Console
+console accessible under: `<server-ip>:8443`  
+if not running:  
+```
+cd /opt/ibm-cloud-private-ce-1.2.1/
+sudo systemctl stop firewalld
+sudo docker run -e LICENSE=accept --net=host --rm -t -v "$(pwd)/cluster":/installer/cluster ibmcom/cfc-installer:1.2.0 install
+```
+
+
+### MongoDB
+install mongodb: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/  
+enable on startup  
+`sudo systemctl enable mongod`  
+secure with user credentials:  
+
+1) Start MongoDB without access control.  
+```
+sudo systemctl start mongod
+```
+2) Connect to the instance.  
+```
+mongo
+```
+3) Create the user administrator (in the admin authentication database).  
+```
+use admin
+db.createUser(
+  {
+    user: "admin",
+    pwd: "xxx",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+```  
+4) Re-start the MongoDB instance with access control.  
+```
+sudo systemctl stop mongod
+```
+add:  
+```
+security:
+    authentication: enabled
+```
+add:
+```
+net:
+    bindIpAll: true
+```
+to /etc/mongodb.conf  
+
+```
+sudo systemctl start mongod
+```
+5) Connect and authenticate as the user administrator.  
+```
+mongo -u "admin" -p "xxx" --authenticationDatabase "admin"
+```
+6) Create db "buzzy-db" and add user "buzzyuser"  
+```
+use buzzy-db
+db.createUser(
+  {
+    user: "buzzyuser",
+    pwd: "xxx",
+    roles: [ "readWrite", "dbAdmin" ]
+  }
+)
+```
+7) Test to connect and authenticate as buzzyuser.  
+```
+mongo -u "buzzyuser" -p "xxx" --authenticationDatabase "buzzy-db"
+```
 
 
 ### Pre-Requisites
 1. IBM Spectrum CFC is installed and running
 2. WebSphere environment with Web Server
 3. [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) is installed
+4. mongodb is installed and db and user is configured
 
 
 ### Login to kubectl
