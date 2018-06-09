@@ -51,9 +51,10 @@ spec:
             - name: LOG_TO_STDOUT
               value: "1"
             - name: MONGO_URL
-              value:  "mongodb://<mongodbuser>:<mongodbuserpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/buzzy_debug?ssl=true&authSource=admin"
-            - name: MONGO_OPLOG_URL
-              value: "mongodb://<oploguser>:<oplogpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/local?authSource=admin&ssl=true"
+              value:  "mongodb://<mongodbuser>:<mongodbuserpassword>@hostname:27017/buzzy-db"
+              # not necessary if replica set does not exist
+            #- name: MONGO_OPLOG_URL
+            #  value: "mongodb://<oploguser>:<oplogpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/local?authSource=admin&ssl=true"
             - name: MAIL_URL
               value: "smtp://someuser:somepassword@smtp.sendgrid.net:587"
             - name: METEOR_SETTINGS
@@ -105,8 +106,6 @@ spec:
               	"BUZZY_LOGGING_TOKEN": "somelongtoken",
               	"BUZZY_ADMIN_TOKEN": "somelongtoken",
               	"BUZZY_DEBUG": true,
-              	"BUZZY_BASIC_BUZZ_ID": "setthisup",
-              	"BUZZY_WELCOME_BUZZ_ID": "setthisup",
               	"CAMPAIGN_MONITOR": {
               		"AVOID": true,
               		"APIKEY": "",
@@ -173,7 +172,7 @@ spec:
               		}
 
               	},
-              	"public":
+              	"public": {
                     "EMBEDLEY":"891b25c24ede41cf8ee5a4f0802a3cff",
                     "S3FileExpiry": 6.048e+8,
               		"AWS_BUZZY_FILES": {
@@ -303,7 +302,7 @@ spec:
               			"APP_URL_IOS": "itunes.apple.com/app/apple-store/id954176500?pt=105534889&ct=buzzyemailcomment&mt=8",
               			"APP_URL_ANDROID": "play.google.com/store/apps/details?id=buzz.buzzy.my1&hl=en&utm_source=buzzy_email&utm_content=buzzyemailcomment",
               			"LOGO_MAIN": "https://s3.amazonaws.com/buzzy-custom-logos/logo_thinarrow_rev.png",
-              			"LOGO_MAIL": "https://s3.amazonaws.com/buzzy-custom-logos/logo_thinarrow.png
+              			"LOGO_MAIL": "https://s3.amazonaws.com/buzzy-custom-logos/logo_thinarrow.png",
                         "LOGO_MAIL_WIDTH": "60",
                         "LOGO_MAIL_HEIGHT": "25",
               			"EMAIL_FOOTER": "The thinnest arrow of them all.",
