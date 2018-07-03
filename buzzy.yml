@@ -47,22 +47,21 @@ spec:
             - name: PORT
               value: "8080"
             - name: ROOT_URL
-              value: "<BUZZY_URL>"
+              value: "BUZZY_URL"
             - name: LOG_TO_STDOUT
               value: "1"
             - name: MONGO_URL
-              value:  "mongodb://<mongodbuser>:<mongodbuserpassword>@hostname:27017/buzzy-db"
-              # not necessary if replica set does not exist
-            #- name: MONGO_OPLOG_URL
-            #  value: "mongodb://<oploguser>:<oplogpassword>@<MONGO_URL1>,<MONGO_URL2>,<MONGO_URL3>,...,<MONGO_URLN>/local?authSource=admin&ssl=true"
+              value: "mongodb://buzzyuser:buzzypassword@boot_instance_domain_name:27017/buzzy-db"
+#            - name: MONGO_OPLOG_URL
+#              value: "mongodb://buzzyuser:buzzypassword@boot_instance_domain_name:27017/buzzy-db"
             - name: MAIL_URL
-              value: "smtp://someuser:somepassword@smtp.sendgrid.net:587"
+              value: "smtp://sendgrid_api_secret@smtp.sendgrid.net:587"
             - name: METEOR_SETTINGS
               value: '{
                 "BUZZY_MOBILE_CONFIG": {
                     "id": "com.<somedomain>.<some sub domain - eg app>",
-                    "name": "<App Name>",
-                    "description": "<App description>",
+                    "name": "buzzy",
+                    "description": "Buzzy description",
                     "version": "3.0.4"
 
                 },
@@ -76,8 +75,8 @@ spec:
               	},
                 "PUSH_SETTINGS": {
                     "apn": {
-            			"certDataFileName":"prod_cert_28dec2017.pem",
-            			"keyDataFileName":"prod_key_28dec2017.pem",
+            		"certDataFileName":"prod_cert_28dec2017.pem",
+            		"keyDataFileName":"prod_key_28dec2017.pem",
                      	"passphrase": "some-passphrase",
                         "production": true
 
@@ -99,13 +98,15 @@ spec:
               		"secret": "will become obsolete"
 
               	},
-                "MAIL_URL": "<as above SMTP user+parssowrd+smtpurl>",
+                "MAIL_URL": "smtp://sendgrid_secret@smtp.sendgrid.net:587",
                 "BUZZY_TESTING": false,
-              	"BUZZY_ADMIN_IDS": ["LIST ADMIN useridwillgohere once they are setup"],
+              	"BUZZY_ADMIN_IDS": ["id_hash_in_buzzy_profile_url"],
               	"BUZZY_WATSON_USERID": "",
               	"BUZZY_LOGGING_TOKEN": "somelongtoken",
               	"BUZZY_ADMIN_TOKEN": "somelongtoken",
               	"BUZZY_DEBUG": true,
+              	"BUZZY_BASIC_BUZZ_ID": "setthisup",
+              	"BUZZY_WELCOME_BUZZ_ID": "setthisup",
               	"CAMPAIGN_MONITOR": {
               		"AVOID": true,
               		"APIKEY": "",
@@ -115,8 +116,6 @@ spec:
               		"UNPAID_AUTHOR_LIST": ""
 
               	},
-                "BUZZY_BASIC_BUZZ_ID": "<buzz id of basic buzz>",
-                "BUZZY_WELCOME_BUZZ_ID": "<buzz id of Welcome Buzz>",
 
               	"MAIL_INCOMING_DOMAIN": "needed if reply to comments via email are needed",
               	"MAILGUN_KEY": "mailgun key for incoming MAIL_INCOMING_DOMAIN",
@@ -322,7 +321,7 @@ spec:
               			{
               				"name": "ibmconnectionsonprem",
               				"displayName": "IBM Connections On Premise",
-              				"domain": "https://apps.collabservintegration.com"
+                                        "domain": "<connections_domain>"
               			},
               			{
               				"name": "ibmwatsonworkspace",
@@ -387,43 +386,6 @@ spec:
 
               }'
 
-            # - name: NODE_ENV
-        #       value: production
-        #     - name: MONGO_COMPOSE_URL
-        #       value: mongodb://secret
-        #     - name: SESSION_SECRET
-        #       value: secret
-        #     - name: SEED_OAUTH_CLIENT_ID
-        #       value: secret
-        #     - name: SEED_OAUTH_CLIENT_PWD
-        #       value: secret
-        #     - name: MAILER_FROM_NAME
-        #       value: Kudos Boards
-        #     - name: MAILER_FROM_ADDRESS
-        #       value: notifications@kudosboards.com
-        #     - name: MAILER_SERVICE_PROVIDER
-        #       value: sendgrid
-        #     - name: MAILER_EMAIL_ID
-        #       value: secret
-        #     - name: MAILER_PASSWORD
-        #       value: secret
-        #     - name: RUN_COMMAND
-        #       value: gulp prod
-        #     - name: PORT
-        #       value: "8080"
-        #     - name: REDIS_HOST
-        #       value: redis-boards-prod-service
-        #     - name: REDIS_PORT
-        #       value: "6379"
-        #     - name: STRIPE_SECRET
-        #       value: secret
-        #     - name: STRIPE_SIGNING_SECRET
-        #       value: secret
-        #     - name: STRIPE_TEST_CUSTOMER
-        #       value: secret
-        #     - name: STRIPE_PUBLISHABLE_KEY
-        #       value: secret
-
 ---
 
 apiVersion: v1
@@ -441,49 +403,3 @@ spec:
       nodePort: 30289
 
 ---
-
-# apiVersion: extensions/v1beta1
-# kind: Ingress
-# metadata:
-#   name: buzzy-ingress-prod
-#   namespace: buzzy
-#   annotations:
-#     ingress.bluemix.net/sticky-cookie-services: serviceName=buzzy-service name=sticky_session_cookie
-#     ingress.bluemix.net/websocket-services: buzzy-service
-#     ingress.bluemix.net/redirect-to-https: "true"
-#     ingress.bluemix.net/proxy-buffering: "false"
-#     ingress.bluemix.net/client-max-body-size: "200m"
-#     ingress.bluemix.net/location-snippets: "proxy-buffer-size 128k;"
-# spec:
-#   tls:
-#     - hosts:
-#         - blue.buzzy.buzz
-#         # - www.kudosboards.com
-#         # - api.kudosboards.com
-#         # - my.kudosboards.com
-#       secretName: buzzy-domain-secret
-#   rules:
-#     - host: blue.buzzy.buzz
-#       http:
-#         paths:
-#           - backend:
-#               serviceName: buzzy-service
-#               servicePort: 80
-#     # - host: www.kudosboards.com
-#     #   http:
-#     #     paths:
-#     #       - backend:
-#     #           serviceName: kudos-boards-cloud-prod-service
-#     #           servicePort: 80
-#     # - host: api.kudosboards.com
-#     #   http:
-#     #     paths:
-#     #       - backend:
-#     #           serviceName: kudos-boards-cloud-prod-service
-#     #           servicePort: 80
-#     # - host: my.kudosboards.com
-#     #   http:
-#     #     paths:
-#     #       - backend:
-#     #           serviceName: kudos-boards-cloud-prod-service
-#     #           servicePort: 80
